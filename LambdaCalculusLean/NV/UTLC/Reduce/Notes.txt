@@ -1,0 +1,2 @@
+
+The call-by-name λ-calculus substitutes a parameter into the body of the function without evaluating it, the call-by-value λ-calculus requires that the parameter is evaluated to a value before it gets substituted.

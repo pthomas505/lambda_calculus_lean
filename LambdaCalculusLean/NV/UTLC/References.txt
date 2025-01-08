@@ -1,0 +1,24 @@
+
+References:
+
+[1]
+Lectures on the Curry-Howard Isomorphism
+Morten Heine Sørensen
+Pawel Urzyczyn
+Jul 2006
+Elsevier
+https://play.google.com/store/books/details/Morten_Heine_S%C3%B8rensen_Lectures_on_the_Curry_Howard?id=_mtnm-9KtbEC&hl=en
+
+[2]
+Type Theory and Formal Proof
+An Introduction
+Rob Nederpelt, Herman Geuvers
+
+https://augustss.blogspot.com/2007/10/simpler-easier-in-recent-paper-simply.html
+
+https://groups.seas.harvard.edu/courses/cs152/2022sp/lectures/lec07-lambdacalc.pdf
+
+http://itu.dk/people/sestoft/papers/sestoft-lamreduce.pdf
+https://www.cs.cornell.edu/courses/cs6110/2014sp/Handouts/Sestoft.pdf
+
+https://personal.morris.umn.edu/~elenam/4651_fall08/examples/CBV_CBN.pdf
