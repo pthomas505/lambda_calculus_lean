@@ -1,5 +1,5 @@
-import LC.NV.UTLC.Sub.Alpha
-import LC.NV.UTLC.Sub.SubIsDef
+import LambdaCalculusLean.NV.UTLC.Sub.Alpha
+import LambdaCalculusLean.NV.UTLC.Sub.SubIsDef
 
 
 set_option autoImplicit false

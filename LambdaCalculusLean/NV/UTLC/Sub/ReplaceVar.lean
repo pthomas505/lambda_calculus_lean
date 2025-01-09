@@ -1,4 +1,4 @@
-import LC.NV.UTLC.Binders
+import LambdaCalculusLean.NV.UTLC.Binders
 
 
 set_option autoImplicit false

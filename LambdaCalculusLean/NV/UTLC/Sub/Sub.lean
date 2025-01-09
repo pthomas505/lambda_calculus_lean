@@ -1,8 +1,8 @@
-import MathlibExtra.Fresh
-import MathlibExtra.FunctionUpdateITE
+import MathlibExtraLean.Fresh
+import MathlibExtraLean.FunctionUpdateITE
 
-import LC.NV.UTLC.Sub.SubIsDef
-import LC.NV.UTLC.Sub.ReplaceFree
+import LambdaCalculusLean.NV.UTLC.Sub.SubIsDef
+import LambdaCalculusLean.NV.UTLC.Sub.ReplaceFree
 
 
 set_option autoImplicit false

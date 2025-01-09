@@ -1,6 +1,6 @@
-import LC.NV.UTLC.Comb
-import LC.NV.UTLC.Reduce.NF
-import LC.NV.UTLC.Sub.Sub
+import LambdaCalculusLean.NV.UTLC.Comb
+import LambdaCalculusLean.NV.UTLC.Reduce.NF
+import LambdaCalculusLean.NV.UTLC.Sub.Sub
 
 
 set_option autoImplicit false

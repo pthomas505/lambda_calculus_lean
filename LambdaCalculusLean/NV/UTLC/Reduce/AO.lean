@@ -1,4 +1,4 @@
-import LC.NV.UTLC.Reduce.NF
+import LambdaCalculusLean.NV.UTLC.Reduce.NF
 
 
 set_option autoImplicit false

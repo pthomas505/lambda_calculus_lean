@@ -1,4 +1,4 @@
-import LC.NV.UTLC.Term
+import LambdaCalculusLean.NV.UTLC.Term
 
 import Mathlib.Data.Multiset.Basic
 

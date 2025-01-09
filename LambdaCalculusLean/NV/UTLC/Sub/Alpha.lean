@@ -1,5 +1,5 @@
-import LC.NV.UTLC.Sub.ReplaceVar
-import LC.NV.UTLC.Sub.ReplaceFree
+import LambdaCalculusLean.NV.UTLC.Sub.ReplaceVar
+import LambdaCalculusLean.NV.UTLC.Sub.ReplaceFree
 
 
 set_option autoImplicit false
