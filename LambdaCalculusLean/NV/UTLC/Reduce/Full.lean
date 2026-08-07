@@ -15,7 +15,7 @@ open Term_
 
 
 inductive is_full_step
-  (sub : Symbol_ → Term_ → Term_ → Term_) :
+  (sub : String → Term_ → Term_ → Term_) :
   Term_ → Term_ → Prop
 | rule_1
   (e1 e1' e2 : Term_) :
@@ -28,12 +28,12 @@ inductive is_full_step
   is_full_step sub (app_ e1 e2) (app_ e1 e2')
 
 | rule_3
-  (x : Symbol_)
+  (x : String)
   (e e' : Term_) :
   is_full_step sub e e' →
   is_full_step sub (abs_ x e) (abs_ x e')
 
 | rule_4
-  (x : Symbol_)
+  (x : String)
   (e1 e2 : Term_) :
   is_full_step sub (app_ (abs_ x e1) e2) (sub x e2 e1)

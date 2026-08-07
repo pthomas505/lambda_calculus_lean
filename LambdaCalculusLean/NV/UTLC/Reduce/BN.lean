@@ -15,7 +15,7 @@ open Term_
 
 
 inductive is_bn_small_step
-  (sub : Symbol_ → Term_ → Term_ → Term_) :
+  (sub : String → Term_ → Term_ → Term_) :
   Term_ → Term_ → Prop
 | rule_1
   (e1 e1' e2 : Term_) :
@@ -23,13 +23,13 @@ inductive is_bn_small_step
   is_bn_small_step sub (app_ e1 e2) (app_ e1' e2)
 
 | rule_2
-  (x : Symbol_)
+  (x : String)
   (e1 e2 : Term_) :
   is_bn_small_step sub (app_ (abs_ x e1) e2) (sub x e2 e1)
 
 
 def bn_small_step
-  (sub : Symbol_ → Term_ → Term_ → Term_) :
+  (sub : String → Term_ → Term_ → Term_) :
   Term_ → Option Term_
 
   -- rule_2
@@ -45,7 +45,7 @@ def bn_small_step
 
 
 example
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (M N : Term_)
   (h1 : is_bn_small_step sub M N) :
   bn_small_step sub M = Option.some N :=
@@ -66,7 +66,7 @@ example
 
 
 example
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (M N : Term_)
   (h1 : bn_small_step sub M = Option.some N) :
   is_bn_small_step sub M N :=
@@ -102,7 +102,7 @@ example
 
 
 def iterate_bn_small_step
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (fuel : Nat)
   (e : Term_) :
   Term_ :=
@@ -119,19 +119,19 @@ def iterate_bn_small_step
 
 
 inductive is_bn_big_step
-  (sub : Symbol_ → Term_ → Term_ → Term_) :
+  (sub : String → Term_ → Term_ → Term_) :
   Term_ → Term_ → Prop
 | rule_1
-  (x : Symbol_) :
+  (x : String) :
   is_bn_big_step sub (Term_.var_ x) (Term_.var_ x)
 
 | rule_2
-  (x : Symbol_)
+  (x : String)
   (e : Term_) :
   is_bn_big_step sub (abs_ x e) (abs_ x e)
 
 | rule_3
-  (x : Symbol_)
+  (x : String)
   (e e' e1 e2 : Term_) :
   is_bn_big_step sub e1 (abs_ x e) →
   is_bn_big_step sub (sub x e2 e) e' →
@@ -145,7 +145,7 @@ inductive is_bn_big_step
 
 
 example
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (M N : Term_)
   (h1 : is_bn_big_step sub M N) :
   is_weak_head_normal_form N :=
@@ -177,7 +177,7 @@ example
 
 
 lemma is_bn_small_step_refl_trans_rule_1
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (e1 e1' e2 : Term_)
   (h1 : Relation.ReflTransGen (is_bn_small_step sub) e1 e1') :
   Relation.ReflTransGen (is_bn_small_step sub) (app_ e1 e2) (app_ e1' e2) :=
@@ -193,7 +193,7 @@ lemma is_bn_small_step_refl_trans_rule_1
 
 
 example
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (M N : Term_)
   (h1 : is_bn_big_step sub M N) :
   Relation.ReflTransGen (is_bn_small_step sub) M N :=
@@ -216,7 +216,7 @@ example
 
 
 def bn_big_step_fuel
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (fuel : Nat)
   (e : Term_) :
   Option Term_ :=
@@ -238,7 +238,7 @@ def bn_big_step_fuel
 
 
 example
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (fuel : Nat)
   (n : Nat)
   (M N : Term_)
@@ -249,7 +249,7 @@ example
 
 
 example
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (M N : Term_)
   (h1 : is_bn_big_step sub M N) :
   ∃ (fuel : Nat), fuel > 0 ∧ bn_big_step_fuel sub fuel M = Option.some N :=
@@ -270,7 +270,7 @@ example
 
 
 example
-  (sub : Symbol_ → Term_ → Term_ → Term_)
+  (sub : String → Term_ → Term_ → Term_)
   (fuel : Nat)
   (M N : Term_)
   (h1 : bn_big_step_fuel sub fuel M = Option.some N) :

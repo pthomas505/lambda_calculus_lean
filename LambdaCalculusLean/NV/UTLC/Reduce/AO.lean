@@ -13,7 +13,7 @@ open Term_
 
 -- ?
 inductive is_ao_small_step
-  (sub : Symbol_ → Term_ → Term_ → Term_) :
+  (sub : String → Term_ → Term_ → Term_) :
   Term_ → Term_ → Prop
 | rule_1
   (e1 e1' e2 : Term_) :
@@ -27,20 +27,20 @@ inductive is_ao_small_step
   is_ao_small_step sub (app_ v e) (app_ v e')
 
 | rule_3
-  (x : Symbol_)
+  (x : String)
   (e v : Term_) :
   is_abs v →
   is_ao_small_step sub (app_ (abs_ x e) v) (sub x v e)
 
 | rule_4
-  (x : Symbol_)
+  (x : String)
   (e e' : Term_) :
   is_ao_small_step sub e e' →
   is_ao_small_step sub (abs_ x e) (abs_ x e')
 
 
 def ao_small_step
-  (sub : Symbol_ → Term_ → Term_ → Term_) :
+  (sub : String → Term_ → Term_ → Term_) :
   Term_ → Option Term_
 
   -- rule_4
@@ -68,20 +68,20 @@ def ao_small_step
 
 
 inductive is_ao_big_step
-  (sub : Symbol_ → Term_ → Term_ → Term_) :
+  (sub : String → Term_ → Term_ → Term_) :
   Term_ → Term_ → Prop
 | rule_1
-  (x : Symbol_) :
+  (x : String) :
   is_ao_big_step sub (var_ x) (var_ x)
 
 | rule_2
-  (x : Symbol_)
+  (x : String)
   (e e' : Term_) :
   is_ao_big_step sub e e' →
   is_ao_big_step sub (abs_ x e) (abs_ x e')
 
 | rule_3
-  (x : Symbol_)
+  (x : String)
   (e e' e1 e2 e2' : Term_) :
   is_ao_big_step sub e1 (abs_ x e) →
   is_ao_big_step sub e2 e2' →
