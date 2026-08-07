@@ -72,3 +72,125 @@ elab "(Term_|" e:term_ ")" : term => elabTerm e
 
 #eval (Term_| (λ x. x))
 #eval (Term_| (λ x. x)).toString
+
+
+-- ----------------------------------------------------------------------------
+
+
+/--
+  `Term_.is_var M` := True if and only if `M` is a term variable.
+-/
+def Term_.is_var :
+  Term_ → Prop
+  | Term_.Var _ => True
+  | _ => False
+
+
+instance
+  (M : Term_) :
+  Decidable M.is_var :=
+  by
+    cases M
+    all_goals
+      unfold Term_.is_var
+      infer_instance
+
+
+lemma is_var_iff_exists_var
+  (M : Term_) :
+  M.is_var ↔ ∃ (x : String), M = Term_.Var x :=
+  by
+    constructor
+    · intro a1
+      cases M
+      case Var x =>
+        apply Exists.intro x
+        apply Eq.refl
+      all_goals
+        unfold Term_.is_var at a1
+        simp only at a1
+    · intro a1
+      obtain ⟨x, a1⟩ := a1
+      rewrite [a1]
+      unfold Term_.is_var
+      simp only
+
+
+/--
+  `Term_.is_app M` := True if and only if `M` is a term application.
+-/
+def Term_.is_app :
+  Term_ → Prop
+  | Term_.App _ _ => True
+  | _ => False
+
+
+instance
+  (M : Term_) :
+  Decidable M.is_app :=
+  by
+    cases M
+    all_goals
+      unfold Term_.is_app
+      infer_instance
+
+
+lemma is_app_iff_exists_app
+  (M : Term_) :
+  M.is_app ↔∃ (P Q : Term_), M = Term_.App P Q :=
+  by
+    constructor
+    · intro a1
+      cases M
+      case App P Q =>
+        apply Exists.intro P
+        apply Exists.intro Q
+        apply Eq.refl
+      all_goals
+        unfold Term_.is_app at a1
+        simp only at a1
+    · intro a1
+      obtain ⟨P, Q, a1⟩ := a1
+      rewrite [a1]
+      unfold Term_.is_app
+      simp only
+
+
+/--
+  `Term_.is_abs M` := True if and only if `M` is a term abstraction.
+-/
+def Term_.is_abs :
+  Term_ → Prop
+  | Term_.Abs _ _ => True
+  | _ => False
+
+
+instance
+  (M : Term_) :
+  Decidable M.is_abs :=
+  by
+    cases M
+    all_goals
+      unfold Term_.is_abs
+      infer_instance
+
+
+lemma is_abs_iff_exists_abs
+  (M : Term_) :
+  M.is_abs ↔∃ (x : String) (P : Term_), M = Term_.Abs x P :=
+  by
+    constructor
+    · intro a1
+      cases M
+      case Abs x P =>
+        apply Exists.intro x
+        apply Exists.intro P
+        apply Eq.refl
+      all_goals
+        unfold Term_.is_abs at a1
+        simp only at a1
+    · intro a1
+      obtain ⟨P, Q, a1⟩ := a1
+      rewrite [a1]
+      unfold Term_.is_abs
+      simp only
