@@ -1,8 +1,8 @@
 import MathlibExtraLean.Fresh
 import MathlibExtraLean.FunctionUpdateITE
 
-import TtfpLean.UTLC.Sub.SubIsDef
-import TtfpLean.UTLC.Sub.ReplaceFree
+import LambdaCalculusLean.NV.UTLC.Sub.SubIsDef
+import LambdaCalculusLean.NV.UTLC.Sub.ReplaceFree
 
 
 set_option linter.style.docString false

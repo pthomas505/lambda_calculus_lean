@@ -1,4 +1,4 @@
-import TtfpLean.UTLC.Sub.IsSub
+import LambdaCalculusLean.NV.UTLC.Sub.IsSub
 
 
 set_option linter.style.docString false

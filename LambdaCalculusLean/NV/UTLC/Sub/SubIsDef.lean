@@ -1,6 +1,6 @@
-import TtfpLean.UTLC.Sub.ReplaceFree
+import LambdaCalculusLean.NV.UTLC.Sub.ReplaceFree
 
-import TtfpLean.Extra
+import LambdaCalculusLean.Extra
 
 
 set_option linter.style.docString false

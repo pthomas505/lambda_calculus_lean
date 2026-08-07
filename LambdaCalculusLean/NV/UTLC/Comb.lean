@@ -1,4 +1,4 @@
-import TtfpLean.UTLC.Term
+import LambdaCalculusLean.NV.UTLC.Term
 
 
 def I_ : Term_ := (Term_| (λ x. x))

@@ -1,5 +1,5 @@
-import TtfpLean.UTLC.Sub.Alpha
-import TtfpLean.UTLC.Sub.SubIsDef
+import LambdaCalculusLean.NV.UTLC.Sub.Alpha
+import LambdaCalculusLean.NV.UTLC.Sub.SubIsDef
 
 
 set_option linter.style.emptyLine false

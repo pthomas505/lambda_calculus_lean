@@ -1,4 +1,4 @@
-import TtfpLean.UTLC.Term
+import LambdaCalculusLean.NV.UTLC.Term
 
 import Mathlib.Data.Finset.Basic
 

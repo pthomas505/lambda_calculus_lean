@@ -1,4 +1,4 @@
-import TtfpLean.UTLC.Binders
+import LambdaCalculusLean.NV.UTLC.Binders
 
 
 set_option linter.style.docString false

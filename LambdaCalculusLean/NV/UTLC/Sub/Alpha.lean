@@ -1,6 +1,6 @@
-import TtfpLean.UTLC.Binders
-import TtfpLean.UTLC.Sub.ReplaceFree
-import TtfpLean.UTLC.Sub.ReplaceVar
+import LambdaCalculusLean.NV.UTLC.Binders
+import LambdaCalculusLean.NV.UTLC.Sub.ReplaceFree
+import LambdaCalculusLean.NV.UTLC.Sub.ReplaceVar
 
 
 set_option linter.style.docString false

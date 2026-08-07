@@ -1,4 +1,4 @@
-import TtfpLean.UTLC.Term
+import LambdaCalculusLean.NV.UTLC.Term
 
 
 set_option linter.style.docString false
