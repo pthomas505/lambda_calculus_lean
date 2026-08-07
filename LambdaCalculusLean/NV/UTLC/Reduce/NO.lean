@@ -3,10 +3,8 @@ import LambdaCalculusLean.NV.UTLC.Reduce.NF
 import LambdaCalculusLean.NV.UTLC.Sub.Sub
 
 
-set_option autoImplicit false
-
-
-open Term_
+set_option linter.style.longLine false
+set_option linter.style.emptyLine false
 
 
 -- Normal Order Reduction to Normal Form
@@ -20,18 +18,18 @@ inductive is_no_small_step
 | rule_1
   (e1 e1' e2 : Term_) :
   is_no_small_step sub e1 e1' →
-  is_no_small_step sub (app_ e1 e2) (app_ e1' e2)
+  is_no_small_step sub (Term_.App e1 e2) (Term_.App e1' e2)
 
 | rule_2
   (x : String)
   (e1 e2 : Term_) :
-  is_no_small_step sub (app_ (abs_ x e1) e2) (sub x e2 e1)
+  is_no_small_step sub (Term_.App (Term_.Abs x e1) e2) (sub x e2 e1)
 
 | rule_3
   (x : String)
   (e e' : Term_) :
   is_no_small_step sub e e' →
-  is_no_small_step sub (abs_ x e) (abs_ x e')
+  is_no_small_step sub (Term_.Abs x e) (Term_.Abs x e')
 
 
 def no_small_step
@@ -39,18 +37,18 @@ def no_small_step
   Term_ → Option Term_
 
   -- rule_3
-| abs_ x e =>
+| Term_.Abs x e =>
   match no_small_step sub e with
-  | Option.some e' => abs_ x e'
+  | Option.some e' => Term_.Abs x e'
   | Option.none => Option.none
 
   -- rule_2
-| app_ (abs_ x e1) e2 => Option.some (sub x e2 e1)
+| Term_.App (Term_.Abs x e1) e2 => Option.some (sub x e2 e1)
 
   -- rule_1
-| app_ e1 e2 =>
+| Term_.App e1 e2 =>
   match no_small_step sub e1 with
-  | Option.some e1' => app_ e1' e2
+  | Option.some e1' => Term_.App e1' e2
   | Option.none => Option.none
 
 | _ => Option.none
@@ -61,25 +59,25 @@ inductive is_no_big_step
   Term_ → Term_ → Prop
 | rule_1
   (x : String) :
-  is_no_big_step sub (var_ x) (var_ x)
+  is_no_big_step sub (Term_.Var x) (Term_.Var x)
 
 | rule_2
   (x : String)
   (e e' : Term_) :
   is_no_big_step sub e e' →
-  is_no_big_step sub (abs_ x e) (abs_ x e')
+  is_no_big_step sub (Term_.Abs x e) (Term_.Abs x e')
 
 | rule_3
   (x : String)
   (e e' e1 e2 : Term_) :
-  is_no_big_step sub e1 (abs_ x e) →
+  is_no_big_step sub e1 (Term_.Abs x e) →
   is_no_big_step sub (sub x e2 e) e' →
-  is_no_big_step sub (app_ e1 e2) e'
+  is_no_big_step sub (Term_.App e1 e2) e'
 
 | rule_4
   (e1 e1' e1'' e2 e2' : Term_) :
-  ¬ is_abs e1' →
+  ¬ Term_.is_abs e1' →
   is_no_big_step sub e1 e1' →
   is_no_big_step sub e1' e1'' →
   is_no_big_step sub e2 e2' →
-  is_no_big_step sub (app_ e1 e2) (app_ e1'' e2')
+  is_no_big_step sub (Term_.App e1 e2) (Term_.App e1'' e2')

@@ -3,10 +3,8 @@ import LambdaCalculusLean.NV.UTLC.Reduce.NF
 import LambdaCalculusLean.NV.UTLC.Sub.Sub
 
 
-set_option autoImplicit false
-
-
-open Term_
+set_option linter.style.longLine false
+set_option linter.style.emptyLine false
 
 
 -- Call-by-Name Reduction to Weak Head Normal Form
@@ -20,12 +18,12 @@ inductive is_bn_small_step
 | rule_1
   (e1 e1' e2 : Term_) :
   is_bn_small_step sub e1 e1' →
-  is_bn_small_step sub (app_ e1 e2) (app_ e1' e2)
+  is_bn_small_step sub (Term_.App e1 e2) (Term_.App e1' e2)
 
 | rule_2
   (x : String)
   (e1 e2 : Term_) :
-  is_bn_small_step sub (app_ (abs_ x e1) e2) (sub x e2 e1)
+  is_bn_small_step sub (Term_.App (Term_.Abs x e1) e2) (sub x e2 e1)
 
 
 def bn_small_step
@@ -33,12 +31,12 @@ def bn_small_step
   Term_ → Option Term_
 
   -- rule_2
-| app_ (abs_ x e1) e2 => Option.some (sub x e2 e1)
+| Term_.App (Term_.Abs x e1) e2 => Option.some (sub x e2 e1)
 
   -- rule_1
-| app_ e1 e2 =>
+| Term_.App e1 e2 =>
   match bn_small_step sub e1 with
-  | Option.some e1' => app_ e1' e2
+  | Option.some e1' => Term_.App e1' e2
   | Option.none => Option.none
 
 | _ => Option.none
@@ -53,12 +51,12 @@ example
     induction h1
     case rule_1 e1 e1' e2 ih_1 ih_2 =>
       cases e1
-      case var_ e1_x =>
+      case Var e1_x =>
         cases ih_1
-      case app_ e1_1 e1_2 =>
+      case App e1_1 e1_2 =>
         unfold bn_small_step
         rw [ih_2]
-      case abs_ e1_x e1_e =>
+      case Abs e1_x e1_e =>
         cases ih_1
     case rule_2 x e1 e2 =>
       unfold bn_small_step
@@ -72,16 +70,16 @@ example
   is_bn_small_step sub M N :=
   by
     induction M generalizing N
-    case var_ x =>
+    case Var x =>
       unfold bn_small_step at h1
       simp at h1
-    case app_ e1 e2 ih_1 _ =>
+    case App e1 e2 ih_1 _ =>
       cases e1
-      case var_ e1_x =>
+      case Var e1_x =>
         cases h1
-      case app_ e1_e1 e1_e2 =>
+      case App e1_e1 e1_e2 =>
         unfold bn_small_step at h1
-        cases h : bn_small_step sub (e1_e1.app_ e1_e2)
+        cases h : bn_small_step sub (e1_e1.App e1_e2)
         case none =>
           rw [h] at h1
           simp at h1
@@ -90,13 +88,13 @@ example
           simp at h1
           specialize ih_1 val h
           rw [← h1]
-          exact is_bn_small_step.rule_1 (e1_e1.app_ e1_e2) val e2 ih_1
-      case abs_ e1_x e1_e =>
+          exact is_bn_small_step.rule_1 (e1_e1.App e1_e2) val e2 ih_1
+      case Abs e1_x e1_e =>
         unfold bn_small_step at h1
         simp at h1
         rw [← h1]
         exact is_bn_small_step.rule_2 e1_x e1_e e2
-    case abs_ x e _ =>
+    case Abs x e _ =>
       unfold bn_small_step at h1
       simp at h1
 
@@ -114,8 +112,8 @@ def iterate_bn_small_step
   else e
 
 
-#eval iterate_bn_small_step (fun x y z => sub_single x y z '+') 3 (app_ not_ true_) = false_
-#eval iterate_bn_small_step (fun x y z => sub_single x y z '+') 3 (app_ not_ false_) = true_
+#eval iterate_bn_small_step (fun x y z => sub_single x y z '+') 3 (Term_.App not_ true_) = false_
+#eval iterate_bn_small_step (fun x y z => sub_single x y z '+') 3 (Term_.App not_ false_) = true_
 
 
 inductive is_bn_big_step
@@ -123,25 +121,25 @@ inductive is_bn_big_step
   Term_ → Term_ → Prop
 | rule_1
   (x : String) :
-  is_bn_big_step sub (Term_.var_ x) (Term_.var_ x)
+  is_bn_big_step sub (Term_.Var x) (Term_.Var x)
 
 | rule_2
   (x : String)
   (e : Term_) :
-  is_bn_big_step sub (abs_ x e) (abs_ x e)
+  is_bn_big_step sub (Term_.Abs x e) (Term_.Abs x e)
 
 | rule_3
   (x : String)
   (e e' e1 e2 : Term_) :
-  is_bn_big_step sub e1 (abs_ x e) →
+  is_bn_big_step sub e1 (Term_.Abs x e) →
   is_bn_big_step sub (sub x e2 e) e' →
-  is_bn_big_step sub (app_ e1 e2) e'
+  is_bn_big_step sub (Term_.App e1 e2) e'
 
 | rule_4
   (e1 e1' e2 : Term_) :
-  ¬ is_abs e1' →
+  ¬ Term_.is_abs e1' →
   is_bn_big_step sub e1 e1' →
-  is_bn_big_step sub (app_ e1 e2) (app_ e1' e2)
+  is_bn_big_step sub (Term_.App e1 e2) (Term_.App e1' e2)
 
 
 example
@@ -163,16 +161,16 @@ example
       unfold is_weak_head_normal_form
       simp
       cases e1'
-      case var_ e1'_x =>
+      case Var e1'_x =>
         unfold is_neutral_weak_head_normal_form
         simp only
-      case app_ e1'_e1 e1'_e2 =>
+      case App e1'_e1 e1'_e2 =>
         unfold is_weak_head_normal_form at ih_3
         simp at ih_3
         unfold is_neutral_weak_head_normal_form
         exact ih_3
-      case abs_ e1'_x e1'_e =>
-        unfold is_abs at ih_1
+      case Abs e1'_x e1'_e =>
+        unfold Term_.is_abs at ih_1
         simp at ih_1
 
 
@@ -180,7 +178,7 @@ lemma is_bn_small_step_refl_trans_rule_1
   (sub : String → Term_ → Term_ → Term_)
   (e1 e1' e2 : Term_)
   (h1 : Relation.ReflTransGen (is_bn_small_step sub) e1 e1') :
-  Relation.ReflTransGen (is_bn_small_step sub) (app_ e1 e2) (app_ e1' e2) :=
+  Relation.ReflTransGen (is_bn_small_step sub) (Term_.App e1 e2) (Term_.App e1' e2) :=
   by
     induction h1
     case refl =>
@@ -204,7 +202,7 @@ example
     case rule_2 x e =>
       exact Relation.ReflTransGen.refl
     case rule_3 x e e' e1 e2 _ _ ih_3 ih_4 =>
-      have s1 : Relation.ReflTransGen (is_bn_small_step sub) (e1.app_ e2) (sub x e2 e) :=
+      have s1 : Relation.ReflTransGen (is_bn_small_step sub) (e1.App e2) (sub x e2 e) :=
       by
         apply Relation.ReflTransGen.trans
         apply is_bn_small_step_refl_trans_rule_1; exact ih_3
@@ -223,18 +221,18 @@ def bn_big_step_fuel
   if fuel > 0
   then
     match e with
-    | Term_.var_ x => Option.some (Term_.var_ x)
-    | abs_ x e => Option.some (abs_ x e)
-    | app_ e1 e2 =>
+    | Term_.Var x => Option.some (Term_.Var x)
+    | Term_.Abs x e => Option.some (Term_.Abs x e)
+    | Term_.App e1 e2 =>
       match bn_big_step_fuel sub fuel e1 with
-      | Option.some (abs_ x e) => bn_big_step_fuel sub (fuel - 1) (sub x e2 e)
-      | Option.some e1' => app_ e1' e2
+      | Option.some (Term_.Abs x e) => bn_big_step_fuel sub (fuel - 1) (sub x e2 e)
+      | Option.some e1' => Term_.App e1' e2
       | _ => Option.none
   else Option.none
 
 
-#eval bn_big_step_fuel (fun x y z => sub_single x y z '+') 3 (app_ not_ true_) = false_
-#eval bn_big_step_fuel (fun x y z => sub_single x y z '+') 3 (app_ not_ false_) = true_
+#eval bn_big_step_fuel (fun x y z => sub_single x y z '+') 3 (Term_.App not_ true_) = false_
+#eval bn_big_step_fuel (fun x y z => sub_single x y z '+') 3 (Term_.App not_ false_) = true_
 
 
 example
@@ -277,13 +275,13 @@ example
   is_bn_big_step sub M N :=
   by
     induction M generalizing N fuel
-    case var_ x =>
+    case Var x =>
       unfold bn_big_step_fuel at h1
       simp at h1
       obtain ⟨h1_left, h1_right⟩ := h1
       rw [← h1_right]
       apply is_bn_big_step.rule_1
-    case app_ e1 e2 ih_1 ih_2 =>
+    case App e1 e2 ih_1 ih_2 =>
       cases c1 : bn_big_step_fuel sub fuel e1
       case none =>
         simp only [bn_big_step_fuel] at h1
@@ -293,29 +291,29 @@ example
         simp only [bn_big_step_fuel] at h1
         rw [c1] at h1
         cases val
-        case var_ x' =>
+        case Var x' =>
           simp at h1
           obtain ⟨h1_left, h1_right⟩ := h1
           rw [← h1_right]
           apply is_bn_big_step.rule_4
-          · simp only [is_abs]
+          · simp only [Term_.is_abs]
             simp
-          · exact ih_1 fuel (Term_.var_ x') c1
-        case app_ e1' e2' =>
+          · exact ih_1 fuel (Term_.Var x') c1
+        case App e1' e2' =>
           simp at h1
           obtain ⟨h1_left, h1_right⟩ := h1
           rw [← h1_right]
           apply is_bn_big_step.rule_4
-          · simp only [is_abs]
+          · simp only [Term_.is_abs]
             simp
-          · exact ih_1 fuel (app_ e1' e2') c1
-        case abs_ x' e' =>
+          · exact ih_1 fuel (Term_.App e1' e2') c1
+        case Abs x' e' =>
           simp at h1
           obtain ⟨h1_left, h1_right⟩ := h1
           apply is_bn_big_step.rule_3 x' e'
-          · exact ih_1 fuel (abs_ x' e') c1
+          · exact ih_1 fuel (Term_.Abs x' e') c1
           · sorry
-    case abs_ x e ih =>
+    case Abs x e ih =>
       unfold bn_big_step_fuel at h1
       simp at h1
       obtain ⟨h1_left, h1_right⟩ := h1

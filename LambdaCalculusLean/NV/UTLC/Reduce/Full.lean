@@ -3,10 +3,7 @@ import LambdaCalculusLean.NV.UTLC.Reduce.NF
 import LambdaCalculusLean.NV.UTLC.Sub.Sub
 
 
-set_option autoImplicit false
-
-
-open Term_
+set_option linter.style.emptyLine false
 
 
 -- full beta reduction
@@ -20,20 +17,20 @@ inductive is_full_step
 | rule_1
   (e1 e1' e2 : Term_) :
   is_full_step sub e1 e1' →
-  is_full_step sub (app_ e1 e2) (app_ e1' e2)
+  is_full_step sub (Term_.App e1 e2) (Term_.App e1' e2)
 
 | rule_2
   (e1 e2 e2' : Term_) :
   is_full_step sub e2 e2' →
-  is_full_step sub (app_ e1 e2) (app_ e1 e2')
+  is_full_step sub (Term_.App e1 e2) (Term_.App e1 e2')
 
 | rule_3
   (x : String)
   (e e' : Term_) :
   is_full_step sub e e' →
-  is_full_step sub (abs_ x e) (abs_ x e')
+  is_full_step sub (Term_.Abs x e) (Term_.Abs x e')
 
 | rule_4
   (x : String)
   (e1 e2 : Term_) :
-  is_full_step sub (app_ (abs_ x e1) e2) (sub x e2 e1)
+  is_full_step sub (Term_.App (Term_.Abs x e1) e2) (sub x e2 e1)
