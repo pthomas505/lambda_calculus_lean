@@ -1,19 +1,13 @@
-import LambdaCalculusLean.NV.UTLC.Term
+import TtfpLean.UTLC.Term
 
 
-set_option autoImplicit false
+def I_ : Term_ := (Term_| (λ x. x))
+def K_ : Term_ := (Term_| (λ x. (λ y. x)))
+def omega_ : Term_ := (Term_| (λ x. (x y)))
+def Omega_ : Term_ := (Term_| (omega_ omega_))
 
 
-open Term_
+def true_ : Term_ := (Term_| (λ x. (λ y. x)))
+def false_ : Term_ := (Term_| (λ x. (λ y. y)))
 
-
-def I_ : Term_ := abs_ "x" (var_ "x")
-def K_ : Term_ := abs_ "x" (abs_ "y" (var_ "x"))
-def omega_ : Term_ := abs_ "x" (app_ (var_ "x") (var_ "x"))
-def Omega_ : Term_ := app_ omega_ omega_
-
-
-def true_ : Term_ := abs_ "x" (abs_ "y" (var_ "x"))
-def false_ : Term_ := abs_ "x" (abs_ "y" (var_ "y"))
-
-def not_ : Term_ := abs_ "b" (app_ (app_ (var_ "b") false_) true_)
+def not_ : Term_ := (Term_| (λ b . ((b false_) true_)))

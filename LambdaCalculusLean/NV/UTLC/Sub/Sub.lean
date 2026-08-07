@@ -1,318 +1,294 @@
 import MathlibExtraLean.Fresh
 import MathlibExtraLean.FunctionUpdateITE
 
-import LambdaCalculusLean.NV.UTLC.Sub.SubIsDef
-import LambdaCalculusLean.NV.UTLC.Sub.ReplaceFree
+import TtfpLean.UTLC.Sub.SubIsDef
+import TtfpLean.UTLC.Sub.ReplaceFree
 
 
-set_option autoImplicit false
-
-
-open Term_
+set_option linter.style.docString false
+set_option linter.style.longLine false
+set_option linter.style.emptyLine false
 
 
 /--
   `sub sigma c M` := The simultaneous replacement of each free occurrence of any variable `x` in the term `M` by `sigma x`. The character `c` is used to generate fresh binding variables as needed to avoid free variable capture.
 -/
 def sub
-  (sigma : Symbol_ → Term_)
+  (sigma : String → Term_)
   (c : Char) :
   Term_ → Term_
-  | var_ x => sigma x
-  | app_ P Q => app_ (sub sigma c P) (sub sigma c Q)
-  | abs_ x P =>
-    let x' : Symbol_ :=
-      if ∃ (y : Symbol_), y ∈ P.free_var_set \ {x} ∧ x ∈ (sigma y).free_var_set
-      then fresh x c ((sub (Function.updateITE sigma x (var_ x)) c P).free_var_set)
+  | Term_.Var x => sigma x
+  | Term_.App P Q => Term_.App (sub sigma c P) (sub sigma c Q)
+  | Term_.Abs x P =>
+    let x' : String :=
+      if ∃ (y : String), y ∈ P.free_var_set \ {x} ∧ x ∈ (sigma y).free_var_set
+      then fresh x c ((sub (Function.updateITE sigma x (Term_.Var x)) c P).free_var_set)
       else x
-    abs_ x' (sub (Function.updateITE sigma x (var_ x')) c P)
+    Term_.Abs x' (sub (Function.updateITE sigma x (Term_.Var x')) c P)
 
 
 /--
   `sub_single x N M c` := `x -> N` in `M`
 -/
 def sub_single
-  (x : Symbol_)
+  (x : String)
   (N : Term_)
   (M : Term_)
   (c : Char) :
   Term_ :=
-  let sigma := Function.updateITE (fun x => var_ x) x N
-  sub sigma c M
+  sub (Function.updateITE Term_.Var x N) c M
 
 
 /--
   `sub_var x y M c` := `x -> y` in `M`
 -/
 def sub_var
-  (x y : Symbol_)
+  (x : String)
+  (y : String)
   (M : Term_)
   (c : Char) :
   Term_ :=
-  sub_single x (var_ y) M c
+  sub_single x (Term_.Var y) M c
 
 
-#eval sub_var "x" "y" (abs_ "x" (var_ "x")) '+'
-#eval sub_var "x" "z" (abs_ "y" (var_ "x")) '+'
-#eval sub_var "x" "y" (abs_ "y" (var_ "x")) '+'
-#eval sub_var "x" "z" (var_ "y") '+'
-#eval sub_var "x" "z" (var_ "x") '+'
+#eval sub_var "x" "y" (Term_.Abs "x" (Term_.Var "x")) '+'
+#eval sub_var "x" "z" (Term_.Abs "y" (Term_.Var "x")) '+'
+#eval sub_var "x" "y" (Term_.Abs "y" (Term_.Var "x")) '+'
+#eval sub_var "x" "z" (Term_.Var "y") '+'
+#eval sub_var "x" "z" (Term_.Var "x") '+'
 
 
--------------------------------------------------------------------------------
+-- ----------------------------------------------------------------------------
 
 
-lemma sub_id
+theorem sub_id
   (M : Term_)
   (c : Char) :
-  sub (fun x ↦ var_ x) c M = M :=
+  sub Term_.Var c M = M :=
   by
     induction M
-    case var_ x_ =>
-      simp only [sub]
-    case app_ P_ Q_ ih_1 ih_2 =>
-      simp only [sub]
-      rw [ih_1]
-      rw [ih_2]
-    case abs_ x_ P_ ih =>
-      simp only [sub]
-      simp
-      constructor
-      · intro x a1 a2 a3
-        unfold free_var_set at a3
-        simp at a3
-        rw [a3] at a2
+    case Var v =>
+      unfold sub
+      apply Eq.refl
+    case App P Q ih_1 ih_2 =>
+      unfold sub
+      rewrite [ih_1]
+      rewrite [ih_2]
+      apply Eq.refl
+    case Abs v P ih =>
+      unfold sub
+      simp only [Term_.free_var_set]
+      split
+      case isTrue c1 =>
+        simp only [Finset.mem_sdiff, Finset.mem_singleton] at c1
+        obtain ⟨y, ⟨⟨c1_left_left, c1_left_right⟩, c1_right⟩⟩ := c1
+        rewrite [c1_right] at c1_left_right
         contradiction
-      · split_ifs
-        case pos c1 =>
-          simp at c1
-          obtain ⟨y, ⟨c1_left_left, c1_left_right⟩, c1_right⟩ := c1
-          unfold free_var_set at c1_right
-          simp at c1_right
-          rw [c1_right] at c1_left_right
-          contradiction
-        case neg c1 =>
-          have s1 : Function.updateITE (fun x ↦ var_ x) x_ (var_ x_) = (fun x ↦ var_ x) :=
-          by
-            ext x
-            unfold Function.updateITE
-            split_ifs
-            case pos c2 =>
-              rw [c2]
-            case neg c2 =>
-              simp
-          rw [s1]
-          exact ih
+      case isFalse c1 =>
+        congr
+        simp only [Function.updateITE_same]
+        exact ih
 
 
-lemma sub_single_not_mem
-  (x : Symbol_)
+theorem sub_single_not_mem
+  (x : String)
   (N : Term_)
   (M : Term_)
   (c : Char)
   (h1 : x ∉ M.free_var_set) :
   sub_single x N M c = M :=
   by
+    unfold sub_single
+
     induction M
-    case var_ x_ =>
-      unfold free_var_set at h1
-      simp at h1
+    case Var v =>
+      unfold Term_.free_var_set at h1
+      simp only [Finset.mem_singleton] at h1
 
-      simp only [sub_single]
-      simp only [sub]
-      simp only [Function.updateITE]
-      split_ifs
-      case pos c1 =>
-        rw [c1] at h1
+      unfold sub
+      unfold Function.updateITE
+      split
+      case isTrue c1 =>
+        rewrite [c1] at h1
         contradiction
-      case neg c1 =>
-        rfl
-    case app_ P_ Q_ ih_1 ih_2 =>
-      simp only [sub_single] at ih_1
+      case isFalse c1 =>
+        apply Eq.refl
+    case App P Q ih_1 ih_2 =>
+      unfold Term_.free_var_set at h1
+      simp only [Finset.mem_union] at h1
+      rewrite [not_or] at h1
+      obtain ⟨h1_left, h1_right⟩ := h1
 
-      unfold free_var_set at h1
-      simp at h1
+      unfold sub
+      rewrite [ih_1 h1_left]
+      rewrite [ih_2 h1_right]
+      apply Eq.refl
+    case Abs v P ih =>
+      unfold Term_.free_var_set at h1
+      simp only [Finset.mem_sdiff, Finset.mem_singleton] at h1
+      rewrite [not_and'] at h1
 
+      unfold sub
+      simp only [Finset.mem_sdiff, Finset.mem_singleton]
+      split
+      case isTrue c1 =>
+        simp only [Finset.mem_sdiff, Finset.mem_singleton] at c1
+        obtain ⟨y, ⟨⟨c1_left_left, c1_left_right⟩, c1_right⟩⟩ := c1
+        unfold Function.updateITE at c1_right
 
-      simp only [sub_single]
-      simp only [sub]
-      congr
-      · tauto
-      · tauto
-    case abs_ x_ P_ ih =>
-      simp only [sub_single] at ih
-
-      unfold free_var_set at h1
-      simp at h1
-
-      simp only [sub_single]
-      simp only [sub]
-      simp
-      constructor
-      · intro z a1 a2 a3
-        simp only [Function.updateITE] at a3
-        split_ifs at a3
-        case pos c1 =>
-          rw [c1] at a1
-          rw [c1] at a2
-          specialize h1 a1
+        split at c1_right
+        case isTrue c2 =>
+          rewrite [c2] at c1_left_left
+          rewrite [c2] at c1_left_right
+          specialize h1 c1_left_right
           contradiction
-        case neg c1 =>
-          simp only [free_var_set] at a3
-          simp at a3
-          rw [a3] at a2
+        case isFalse c2 =>
+          unfold Term_.free_var_set at c1_right
+          simp only [Finset.mem_singleton] at c1_right
+          rewrite [c1_right] at c1_left_right
           contradiction
-      · split_ifs
-        case pos c1 =>
-          simp at c1
-          simp only [Function.updateITE] at c1
-          obtain ⟨y, ⟨c1_left_left, c1_left_right⟩, c1_right⟩ := c1
-          split_ifs at c1_right
-          case pos c2 =>
-            rw [c2] at c1_left_left
-            specialize h1 c1_left_left
-            rw [c2] at c1_left_right
-            contradiction
-          case neg c2 =>
-            unfold free_var_set at c1_right
-            simp at c1_right
-            rw [c1_right] at c1_left_right
-            contradiction
-        case neg c1 =>
-          simp at c1
-          specialize c1 x
-          by_cases c2 : x_ = x
-          case pos =>
-            rw [c2]
-            simp only [Function.updateITE_idem]
-            simp only [Function.updateITE_same]
-            exact sub_id P_ c
-          case neg =>
-            have s1 : Function.updateITE (Function.updateITE (fun x ↦ var_ x) x N) x_ (var_ x_) = Function.updateITE (fun x ↦ var_ x) x N :=
-            by
-              apply Function.updateITE_same
-              simp only [Function.updateITE]
-              split_ifs
-              rfl
-            rw [s1]
-            apply ih
-            tauto
+      case isFalse c1 =>
+        congr
+        by_cases c2 : x = v
+        · rewrite [c2]
+          rewrite [Function.updateITE_idem]
+          rewrite [Function.updateITE_same]
+          · apply sub_id
+          · apply Eq.refl
+        · have s1 : Function.updateITE (Function.updateITE Term_.Var x N) v (Term_.Var v) = Function.updateITE Term_.Var x N :=
+          by
+            apply Function.updateITE_same
+            unfold Function.updateITE
+            split
+            case isTrue c3 =>
+              rewrite [c3] at c2
+              contradiction
+            case isFalse c3 =>
+              apply Eq.refl
+
+          rewrite [s1]
+          apply ih
+          apply h1
+          exact c2
 
 
 theorem extracted_1
-  (c : Char)
-  (y : Symbol_)
-  (P : Term_)
-  (x : Symbol_)
+  (x : String)
   (N : Term_)
+  (y : String)
+  (P : Term_)
+  (c : Char)
   (h1 : ¬ x = y)
   (h2 : y ∉ N.free_var_set) :
-  sub_single x N (abs_ y P) c = abs_ y (sub_single x N P c) :=
+  sub_single x N (Term_.Abs y P) c =
+    Term_.Abs y (sub_single x N P c) :=
   by
-    simp only [sub_single]
+    unfold sub_single
     simp only [sub]
-    simp
-    constructor
-    · intro z a1 a2 a3
-      simp only [Function.updateITE] at a3
-      split_ifs at a3
-      case pos c1 =>
+    split
+    case isTrue c1 =>
+      simp only [Finset.mem_sdiff, Finset.mem_singleton] at c1
+      obtain ⟨z, ⟨⟨c1_left_left, c1_left_right⟩, c1_right⟩⟩ := c1
+      unfold Function.updateITE at c1_right
+      split at c1_right
+      case isTrue c2 =>
         contradiction
-      case neg c1 =>
-        unfold free_var_set at a3
-        simp at a3
-        tauto
-    · split_ifs
-      case pos c1 =>
-        simp at c1
-        obtain ⟨z, ⟨c1_left_left, c1_left_right⟩, c1_right⟩ := c1
-        simp only [Function.updateITE] at c1_right
-        split_ifs at c1_right
-        case pos c2 =>
-          contradiction
-        case neg c2 =>
-          unfold free_var_set at c1_right
-          simp at c1_right
-          rw [c1_right] at c1_left_right
-          contradiction
-      case neg c1 =>
-        rw [Function.updateITE_same]
-        simp only [Function.updateITE]
-        split_ifs
-        case pos c2 =>
-          rw [c2] at h1
-          contradiction
-        case neg c2 =>
-          rfl
+      case isFalse c2 =>
+        unfold Term_.free_var_set at c1_right
+        simp only [Finset.mem_singleton] at c1_right
+        rewrite [c1_right] at c1_left_right
+        contradiction
+    case isFalse c1 =>
+      congr 2
+      apply Function.updateITE_same
+      unfold Function.updateITE
+      split
+      case isTrue c2 =>
+        rewrite [c2] at h1
+        contradiction
+      case isFalse c2 =>
+        apply Eq.refl
 
 
 example
-  (M : Term_)
-  (x : Symbol_)
+  (x : String)
   (N : Term_)
+  (M : Term_)
   (c : Char)
-  (h1 : sub_is_def_v3 M x N) :
+  (h1 : sub_is_def_v3_alt x N M) :
   sub_single x N M c = replace_free x N M :=
   by
     induction h1
-    case var y_ x_ N_ =>
-      simp only [sub_single]
-      simp only [sub]
-      simp only [Function.updateITE]
-      split_ifs
-      case pos c1 =>
-        rw [c1]
-        simp only [replace_free]
-        simp
-      case neg c1 =>
-        simp only [replace_free]
-        split_ifs
-        case pos c2 =>
-          rw [c2] at c1
+    case var y =>
+      unfold sub_single
+      unfold sub
+      unfold Function.updateITE
+      split
+      case isTrue c1 =>
+        unfold replace_free
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          rewrite [c1] at c2
           contradiction
-        case neg c2 =>
-          rfl
-    case app P_ Q_ x_ N_ ih_1 ih_2 ih_3 ih_4 =>
-      simp only [sub_single] at *
-      simp only [sub] at *
-      simp only [replace_free]
-      rw [ih_3]
-      rw [ih_4]
-    case abs_1 y_ P_ x_ N_ ih =>
-      rw [ih]
+      case isFalse c1 =>
+      unfold replace_free
+      split
+      case isTrue c2 =>
+        rewrite [c2] at c1
+        contradiction
+      case isFalse c2 =>
+        apply Eq.refl
+    case app P Q ih_1 ih_2 ih_3 ih_4 =>
+      unfold replace_free
+      rewrite [← ih_3]
+      rewrite [← ih_4]
 
-      have s1 : sub_single y_ N_ (abs_ y_ P_) c = abs_ y_ P_ :=
-      by
+      unfold sub_single
+      simp only [sub]
+    case abs_1 y P ih =>
+      rewrite [ih]
+
+      unfold replace_free
+      split
+      case isTrue c1 =>
         apply sub_single_not_mem
-        unfold free_var_set
-        simp
-
-      rw [s1]
-
-      rw [replace_free_not_mem]
-      unfold free_var_set
-      simp
-    case abs_2 y_ P_ x_ N_ ih_1 ih_2 =>
-      have s1 : sub_single x_ N_ (abs_ y_ P_) c = abs_ y_ P_ :=
-      by
-        apply sub_single_not_mem
-        unfold free_var_set
-        simp
+        unfold Term_.free_var_set
+        simp only [Finset.mem_sdiff, Finset.mem_singleton]
+        rewrite [not_and']
         intro a1
         contradiction
+      case isFalse c1 =>
+        contradiction
+    case abs_2 y P ih_1 ih_2 =>
+      unfold replace_free
+      split
+      case isTrue c1 =>
+        contradiction
+      case isFalse c1 =>
+        have s1 : sub_single x N (Term_.Abs y P) c = Term_.Abs y P :=
+        by
+          apply sub_single_not_mem
+          unfold Term_.free_var_set
+          simp only [Finset.mem_sdiff, Finset.mem_singleton]
+          rewrite [not_and']
+          intro a1
+          simp only [← is_free_in_iff_mem_free_var_set]
+          exact ih_2
 
-      rw [s1]
+        rewrite [s1]
 
-      rw [replace_free_not_mem]
-      unfold free_var_set
-      simp
-      intro a1
-      contradiction
-    case abs_3 y_ P_ x_ N_ ih_1 ih_2 ih_3 ih_4 =>
-      simp only [replace_free]
-      split_ifs
-      rw [← ih_4]
-      apply extracted_1; exact ih_1; exact ih_2
-
-
--------------------------------------------------------------------------------
+        rewrite [not_is_free_in_replace_free x N P ih_2]
+        apply Eq.refl
+    case abs_3 y P ih_1 ih_2 ih_3 ih_4 =>
+      unfold replace_free
+      split
+      case isTrue c1 =>
+        contradiction
+      case isFalse c1 =>
+        rewrite [← ih_4]
+        apply extracted_1
+        · exact c1
+        · simp only [← is_free_in_iff_mem_free_var_set]
+          exact ih_2
