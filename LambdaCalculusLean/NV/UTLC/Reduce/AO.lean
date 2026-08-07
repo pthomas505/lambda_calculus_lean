@@ -1,10 +1,8 @@
 import LambdaCalculusLean.NV.UTLC.Reduce.NF
 
 
-set_option autoImplicit false
-
-
-open Term_
+set_option linter.style.longLine false
+set_option linter.style.emptyLine false
 
 
 -- Applicative Order Reduction to Normal Form
@@ -18,25 +16,25 @@ inductive is_ao_small_step
 | rule_1
   (e1 e1' e2 : Term_) :
   is_ao_small_step sub e1 e1' →
-  is_ao_small_step sub (app_ e1 e2) (app_ e1' e2)
+  is_ao_small_step sub (Term_.App e1 e2) (Term_.App e1' e2)
 
 | rule_2
   (e e' v : Term_) :
-  is_abs v →
+  Term_.is_abs v →
   is_ao_small_step sub e e' →
-  is_ao_small_step sub (app_ v e) (app_ v e')
+  is_ao_small_step sub (Term_.App v e) (Term_.App v e')
 
 | rule_3
   (x : String)
   (e v : Term_) :
-  is_abs v →
-  is_ao_small_step sub (app_ (abs_ x e) v) (sub x v e)
+  Term_.is_abs v →
+  is_ao_small_step sub (Term_.App (Term_.Abs x e) v) (sub x v e)
 
 | rule_4
   (x : String)
   (e e' : Term_) :
   is_ao_small_step sub e e' →
-  is_ao_small_step sub (abs_ x e) (abs_ x e')
+  is_ao_small_step sub (Term_.Abs x e) (Term_.Abs x e')
 
 
 def ao_small_step
@@ -44,24 +42,24 @@ def ao_small_step
   Term_ → Option Term_
 
   -- rule_4
-| abs_ x e =>
+| Term_.Abs x e =>
   match ao_small_step sub e with
-  | Option.some e' => abs_ x e'
+  | Option.some e' => Term_.Abs x e'
   | Option.none => Option.none
 
   -- rule_3
-| app_ (abs_ x e) v@(abs_ _ _) => Option.some (sub x v e)
+| Term_.App (Term_.Abs x e) v@(Term_.Abs _ _) => Option.some (sub x v e)
 
   -- rule_2
-| app_ v@(abs_ _ _) e =>
+| Term_.App v@(Term_.Abs _ _) e =>
   match ao_small_step sub e with
-  | Option.some e' => app_ v e'
+  | Option.some e' => Term_.App v e'
   | Option.none => Option.none
 
   -- rule_1
-| app_ e1 e2 =>
+| Term_.App e1 e2 =>
   match ao_small_step sub e1 with
-  | Option.some e1' => app_ e1' e2
+  | Option.some e1' => Term_.App e1' e2
   | Option.none => Option.none
 
 | _ => Option.none
@@ -72,25 +70,25 @@ inductive is_ao_big_step
   Term_ → Term_ → Prop
 | rule_1
   (x : String) :
-  is_ao_big_step sub (var_ x) (var_ x)
+  is_ao_big_step sub (Term_.Var x) (Term_.Var x)
 
 | rule_2
   (x : String)
   (e e' : Term_) :
   is_ao_big_step sub e e' →
-  is_ao_big_step sub (abs_ x e) (abs_ x e')
+  is_ao_big_step sub (Term_.Abs x e) (Term_.Abs x e')
 
 | rule_3
   (x : String)
   (e e' e1 e2 e2' : Term_) :
-  is_ao_big_step sub e1 (abs_ x e) →
+  is_ao_big_step sub e1 (Term_.Abs x e) →
   is_ao_big_step sub e2 e2' →
   is_ao_big_step sub (sub x e2' e) e' →
-  is_ao_big_step sub (app_ e1 e2) e'
+  is_ao_big_step sub (Term_.App e1 e2) e'
 
 | rule_4
   (e1 e1' e2 e2' : Term_) :
-  ¬ is_abs e1' →
+  ¬ Term_.is_abs e1' →
   is_ao_big_step sub e1 e1' →
   is_ao_big_step sub e2 e2' →
-  is_ao_big_step sub (app_ e1 e2) (app_ e1' e2')
+  is_ao_big_step sub (Term_.App e1 e2) (Term_.App e1' e2')
