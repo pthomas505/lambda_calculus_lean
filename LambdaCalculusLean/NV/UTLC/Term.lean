@@ -96,7 +96,7 @@ instance
       infer_instance
 
 
-lemma is_var_iff_exists_var
+theorem is_var_iff_exists_var
   (M : Term_) :
   M.is_var ↔ ∃ (x : String), M = Term_.Var x :=
   by
@@ -135,7 +135,7 @@ instance
       infer_instance
 
 
-lemma is_app_iff_exists_app
+theorem is_app_iff_exists_app
   (M : Term_) :
   M.is_app ↔∃ (P Q : Term_), M = Term_.App P Q :=
   by
@@ -175,7 +175,7 @@ instance
       infer_instance
 
 
-lemma is_abs_iff_exists_abs
+theorem is_abs_iff_exists_abs
   (M : Term_) :
   M.is_abs ↔∃ (x : String) (P : Term_), M = Term_.Abs x P :=
   by

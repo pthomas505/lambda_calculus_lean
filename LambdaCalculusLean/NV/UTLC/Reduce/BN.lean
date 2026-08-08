@@ -172,7 +172,7 @@ example
         contradiction
 
 
-lemma is_bn_small_step_refl_trans_rule_1
+theorem is_bn_small_step_refl_trans_rule_1
   (sub : String → Term_ → Term_ → Term_)
   (e1 e1' e2 : Term_)
   (h1 : Relation.ReflTransGen (is_bn_small_step sub) e1 e1') :
