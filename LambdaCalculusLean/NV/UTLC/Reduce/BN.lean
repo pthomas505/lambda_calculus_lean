@@ -80,16 +80,17 @@ example
         cases h1
       case App e1_e1 e1_e2 =>
         unfold bn_small_step at h1
-        cases h : bn_small_step sub (e1_e1.App e1_e2)
+
+        cases c1 : bn_small_step sub (e1_e1.App e1_e2)
         case none =>
-          rewrite [h] at h1
+          rewrite [c1] at h1
           simp only at h1
           contradiction
         case some val =>
-          rewrite [h] at h1
+          rewrite [c1] at h1
           simp only [Option.some.injEq] at h1
-          specialize ih_1 val h
-          rw [← h1]
+          rewrite [← h1]
+          specialize ih_1 val c1
           exact is_bn_small_step.rule_1 (e1_e1.App e1_e2) val e2 ih_1
       case Abs e1_x e1_e =>
         unfold bn_small_step at h1
