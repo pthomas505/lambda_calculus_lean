@@ -55,12 +55,13 @@ example
         cases ih_1
       case App e1_1 e1_2 =>
         unfold bn_small_step
-        rw [ih_2]
+        rewrite [ih_2]
+        simp only
       case Abs e1_x e1_e =>
         cases ih_1
     case rule_2 x e1 e2 =>
       unfold bn_small_step
-      rfl
+      apply Eq.refl
 
 
 example
@@ -72,8 +73,8 @@ example
     induction M generalizing N
     case Var x =>
       unfold bn_small_step at h1
-      simp at h1
-    case App e1 e2 ih_1 _ =>
+      contradiction
+    case App e1 e2 ih_1 ih_2 =>
       cases e1
       case Var e1_x =>
         cases h1
@@ -81,22 +82,23 @@ example
         unfold bn_small_step at h1
         cases h : bn_small_step sub (e1_e1.App e1_e2)
         case none =>
-          rw [h] at h1
-          simp at h1
+          rewrite [h] at h1
+          simp only at h1
+          contradiction
         case some val =>
-          rw [h] at h1
-          simp at h1
+          rewrite [h] at h1
+          simp only [Option.some.injEq] at h1
           specialize ih_1 val h
           rw [← h1]
           exact is_bn_small_step.rule_1 (e1_e1.App e1_e2) val e2 ih_1
       case Abs e1_x e1_e =>
         unfold bn_small_step at h1
-        simp at h1
-        rw [← h1]
+        simp only [Option.some.injEq] at h1
+        rewrite [← h1]
         exact is_bn_small_step.rule_2 e1_x e1_e e2
     case Abs x e _ =>
       unfold bn_small_step at h1
-      simp at h1
+      contradiction
 
 
 def iterate_bn_small_step
@@ -150,28 +152,23 @@ example
   by
     induction h1
     case rule_1 x =>
-      unfold is_weak_head_normal_form
-      simp
+      simp only [is_weak_head_normal_form]
     case rule_2 x e =>
-      unfold is_weak_head_normal_form
-      simp
+      simp only [is_weak_head_normal_form]
     case rule_3 _ _ _ _ _ _ _ _ ih_4 =>
       exact ih_4
     case rule_4 e1 e1' e2 ih_1 ih_2 ih_3 =>
-      unfold is_weak_head_normal_form
-      simp
+      simp only [is_weak_head_normal_form]
       cases e1'
       case Var e1'_x =>
-        unfold is_neutral_weak_head_normal_form
-        simp only
+        simp only [is_neutral_weak_head_normal_form]
       case App e1'_e1 e1'_e2 =>
-        unfold is_weak_head_normal_form at ih_3
-        simp at ih_3
+        simp only [is_weak_head_normal_form] at ih_3
         unfold is_neutral_weak_head_normal_form
         exact ih_3
       case Abs e1'_x e1'_e =>
-        unfold Term_.is_abs at ih_1
-        simp at ih_1
+        simp only [Term_.is_abs] at ih_1
+        contradiction
 
 
 lemma is_bn_small_step_refl_trans_rule_1
@@ -205,12 +202,15 @@ example
       have s1 : Relation.ReflTransGen (is_bn_small_step sub) (e1.App e2) (sub x e2 e) :=
       by
         apply Relation.ReflTransGen.trans
-        apply is_bn_small_step_refl_trans_rule_1; exact ih_3
-        apply Relation.ReflTransGen.single
-        apply is_bn_small_step.rule_2
-      apply Relation.ReflTransGen.trans s1; exact ih_4
+        · apply is_bn_small_step_refl_trans_rule_1
+          exact ih_3
+        · apply Relation.ReflTransGen.single
+          apply is_bn_small_step.rule_2
+      apply Relation.ReflTransGen.trans s1
+      exact ih_4
     case rule_4 e1 e1' e2 _ _ ih_3 =>
-      apply is_bn_small_step_refl_trans_rule_1; exact ih_3
+      apply is_bn_small_step_refl_trans_rule_1
+      exact ih_3
 
 
 def bn_big_step_fuel
@@ -254,15 +254,29 @@ example
   by
     induction h1
     case rule_1 x =>
-      simp only [bn_big_step_fuel]
-      simp
       apply Exists.intro 1
-      simp
+      simp only [bn_big_step_fuel]
+      split
+      case isTrue c1 =>
+        constructor
+        · exact Nat.one_pos
+        · apply Eq.refl
+      case isFalse c1 =>
+        exfalso
+        apply c1
+        exact Nat.one_pos
     case rule_2 x e =>
-      simp only [bn_big_step_fuel]
-      simp
       apply Exists.intro 1
-      simp
+      simp only [bn_big_step_fuel]
+      split
+      case isTrue c1 =>
+        constructor
+        · exact c1
+        · apply Eq.refl
+      case isFalse c1 =>
+        exfalso
+        apply c1
+        exact Nat.one_pos
     all_goals
       sorry
 
@@ -276,46 +290,60 @@ example
   by
     induction M generalizing N fuel
     case Var x =>
-      unfold bn_big_step_fuel at h1
-      simp at h1
-      obtain ⟨h1_left, h1_right⟩ := h1
-      rw [← h1_right]
-      apply is_bn_big_step.rule_1
+      simp only [bn_big_step_fuel] at h1
+      split at h1
+      case isTrue c1 =>
+        cases h1
+        apply is_bn_big_step.rule_1
+      case isFalse c1 =>
+        contradiction
     case App e1 e2 ih_1 ih_2 =>
       cases c1 : bn_big_step_fuel sub fuel e1
       case none =>
         simp only [bn_big_step_fuel] at h1
-        rw [c1] at h1
-        simp at h1
+        rewrite [c1] at h1
+        simp only at h1
+        split at h1
+        case isTrue c2 =>
+          contradiction
+        case isFalse c2 =>
+          contradiction
       case some val =>
         simp only [bn_big_step_fuel] at h1
-        rw [c1] at h1
-        cases val
-        case Var x' =>
-          simp at h1
-          obtain ⟨h1_left, h1_right⟩ := h1
-          rw [← h1_right]
-          apply is_bn_big_step.rule_4
-          · simp only [Term_.is_abs]
-            simp
-          · exact ih_1 fuel (Term_.Var x') c1
-        case App e1' e2' =>
-          simp at h1
-          obtain ⟨h1_left, h1_right⟩ := h1
-          rw [← h1_right]
-          apply is_bn_big_step.rule_4
-          · simp only [Term_.is_abs]
-            simp
-          · exact ih_1 fuel (Term_.App e1' e2') c1
-        case Abs x' e' =>
-          simp at h1
-          obtain ⟨h1_left, h1_right⟩ := h1
-          apply is_bn_big_step.rule_3 x' e'
-          · exact ih_1 fuel (Term_.Abs x' e') c1
-          · sorry
+        rewrite [c1] at h1
+        split at h1
+        case isTrue c2 =>
+          cases val
+          case Var x' =>
+            simp only at h1
+            simp only [Option.some.injEq] at h1
+            rewrite [← h1]
+            apply is_bn_big_step.rule_4
+            · simp only [Term_.is_abs]
+              intro contra
+              contradiction
+            · exact ih_1 fuel (Term_.Var x') c1
+          case App e1' e2' =>
+            simp only [Option.some.injEq] at h1
+            rewrite [← h1]
+            apply is_bn_big_step.rule_4
+            · simp only [Term_.is_abs]
+              intro contra
+              contradiction
+            · exact ih_1 fuel (Term_.App e1' e2') c1
+          case Abs x' e' =>
+            simp only at h1
+            apply is_bn_big_step.rule_3 x' e'
+            · exact ih_1 fuel (Term_.Abs x' e') c1
+            · sorry
+        case isFalse c2 =>
+          contradiction
     case Abs x e ih =>
-      unfold bn_big_step_fuel at h1
-      simp at h1
-      obtain ⟨h1_left, h1_right⟩ := h1
-      rw [← h1_right]
-      apply is_bn_big_step.rule_2
+      simp only [bn_big_step_fuel] at h1
+      split at h1
+      case isTrue c1 =>
+        simp only [Option.some.injEq] at h1
+        rewrite [← h1]
+        apply is_bn_big_step.rule_2
+      case isFalse c1 =>
+        contradiction
