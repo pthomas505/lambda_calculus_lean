@@ -151,10 +151,10 @@ example
   induction h1
   case var y =>
     apply sub_is_def_v3.var
-  case app P_ Q_ ih_1 ih_2 =>
+  case app P_ Q_ ih_1 ih_2 ih_3 ih_4 =>
     apply sub_is_def_v3.app
-    · exact ih_1
-    · exact ih_2
+    · exact ih_3
+    · exact ih_4
   case abs_1 y_ P_ ih =>
     apply sub_is_def_v3.abs_1
     exact ih
