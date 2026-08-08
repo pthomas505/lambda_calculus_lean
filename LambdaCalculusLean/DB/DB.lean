@@ -12,7 +12,7 @@ inductive Formula : Type
   | Abs : String → Formula → Formula
   deriving Inhabited, DecidableEq
 
-  compile_inductive% Formula
+compile_inductive% Formula
 
 end NV
 
@@ -25,7 +25,7 @@ inductive Formula : Type
   | Abs : Formula → Formula
   deriving Inhabited, DecidableEq
 
-  compile_inductive% Formula
+compile_inductive% Formula
 
 open Formula
 
@@ -61,6 +61,8 @@ inductive Term
 | B : Int → Term
   deriving Inhabited, DecidableEq
 
+compile_inductive% Term
+
 open Term
 
 inductive Formula : Type
@@ -69,7 +71,7 @@ inductive Formula : Type
   | Abs : Formula → Formula
   deriving Inhabited, DecidableEq
 
-  compile_inductive% Formula
+compile_inductive% Formula
 
 open Formula
 
