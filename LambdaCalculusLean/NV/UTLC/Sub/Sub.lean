@@ -14,12 +14,11 @@ example
   (sigma : String → Term_)
   (x : String)
   (P : Term_) :
-  (∃ (y : String), is_free_in y P ∧ ¬ y = x ∧ is_free_in x (sigma y)) ↔
+  (∃ (y : String), (is_free_in y P ∧ ¬ y = x) ∧ is_free_in x (sigma y)) ↔
     (∃ (y : String), y ∈ P.free_var_set \ {x} ∧ x ∈ (sigma y).free_var_set) :=
   by
     simp only [is_free_in_iff_mem_free_var_set]
     simp only [Finset.mem_sdiff, Finset.mem_singleton]
-    simp only [← and_assoc]
 
 
 instance
@@ -28,12 +27,11 @@ instance
   (P : Term_) :
   Decidable
     (∃ (y : String),
-      is_free_in y P ∧ ¬ y = x ∧ is_free_in x (sigma y)) :=
+      (is_free_in y P ∧ ¬ y = x) ∧ is_free_in x (sigma y)) :=
   by
     apply decidable_of_iff (∃ (y : String), y ∈ P.free_var_set \ {x} ∧ x ∈ (sigma y).free_var_set)
     simp only [is_free_in_iff_mem_free_var_set]
     simp only [Finset.mem_sdiff, Finset.mem_singleton]
-    simp only [← and_assoc]
 
 
 /--
@@ -48,7 +46,7 @@ def sub
   | Term_.Abs x P =>
     let x' : String :=
       -- if ∃ (y : String), y ∈ P.free_var_set \ {x} ∧ x ∈ (sigma y).free_var_set
-      if ∃ (y : String), is_free_in y P ∧ ¬ y = x ∧ is_free_in x (sigma y)
+      if ∃ (y : String), (is_free_in y P ∧ ¬ y = x) ∧ is_free_in x (sigma y)
       then fresh x c ((sub (Function.updateITE sigma x (Term_.Var x)) c P).free_var_set)
       else x
     Term_.Abs x' (sub (Function.updateITE sigma x (Term_.Var x')) c P)
@@ -107,9 +105,9 @@ theorem sub_id
       simp only
       split
       case isTrue c1 =>
-        obtain ⟨y, ⟨c1_left, ⟨c1_right_left, c1_right_right⟩⟩⟩ := c1
-        unfold is_free_in at c1_right_right
-        rewrite [c1_right_right] at c1_right_left
+        obtain ⟨y, ⟨⟨c1_left_left, c1_left_right⟩, c1_right⟩⟩ := c1
+        unfold is_free_in at c1_right
+        rewrite [c1_right] at c1_left_right
         contradiction
       case isFalse c1 =>
         congr
@@ -156,19 +154,19 @@ theorem sub_single_not_mem
       simp only
       split
       case isTrue c1 =>
-        obtain ⟨y, ⟨c1_left, ⟨c1_right_left, c1_right_right⟩⟩⟩ := c1
-        unfold Function.updateITE at c1_right_right
-        split at c1_right_right
+        obtain ⟨y, ⟨⟨c1_left_left, c1_left_right⟩, c1_right⟩⟩ := c1
+        unfold Function.updateITE at c1_right
+        split at c1_right
         case isTrue c2 =>
           exfalso
           apply h1
           · rewrite [← c2]
-            exact c1_right_left
+            exact c1_left_right
           · rewrite [← c2]
-            exact c1_left
+            exact c1_left_left
         case isFalse c2 =>
-          unfold is_free_in at c1_right_right
-          rewrite [c1_right_right] at c1_right_left
+          unfold is_free_in at c1_right
+          rewrite [c1_right] at c1_left_right
           contradiction
       case isFalse c1 =>
         congr
@@ -210,14 +208,14 @@ theorem extracted_1
     simp only [sub]
     split
     case isTrue c1 =>
-      obtain ⟨z, ⟨c1_left, ⟨c1_right_left, c1_right_right⟩⟩⟩ := c1
-      unfold Function.updateITE at c1_right_right
-      split at c1_right_right
+      obtain ⟨y, ⟨⟨c1_left_left, c1_left_right⟩, c1_right⟩⟩ := c1
+      unfold Function.updateITE at c1_right
+      split at c1_right
       case isTrue c2 =>
         contradiction
       case isFalse c2 =>
-        unfold is_free_in at c1_right_right
-        rewrite [c1_right_right] at c1_right_left
+        unfold is_free_in at c1_right
+        rewrite [c1_right] at c1_left_right
         contradiction
     case isFalse c1 =>
       congr 2
