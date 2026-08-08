@@ -68,28 +68,29 @@ example
         cases ih_1
       case App e1_e1 e1_e2 =>
         unfold bv_small_step
-        rw [ih_2]
+        rewrite [ih_2]
+        simp only
       case Abs e1_x e1_e =>
         cases ih_1
     case rule_2 e e' v ih_1 ih_2 ih_3 =>
       simp only [is_abs_iff_exists_abs] at ih_1
       obtain ⟨ih_1_x, ih_1_e, ih_1⟩ := ih_1
-      rw [ih_1]
+      rewrite [ih_1]
       cases e
       case Var e_x =>
         cases ih_2
       case App e_e1 e_e2 =>
         unfold bv_small_step
-        rw [ih_3]
+        rewrite [ih_3]
+        simp only
       case Abs e_x e_e =>
-        unfold bv_small_step
         cases ih_2
     case rule_3 x e v ih_1 =>
       simp only [is_abs_iff_exists_abs] at ih_1
       obtain ⟨ih_1_x, ih_1_e, ih_1⟩ := ih_1
-      rw [ih_1]
+      rewrite [ih_1]
       unfold bv_small_step
-      rfl
+      apply Eq.refl
 
 
 example
@@ -101,7 +102,7 @@ example
     induction M generalizing N
     case Var x =>
       unfold bv_small_step at h1
-      simp at h1
+      contradiction
     case App e1 e2 ih_1 ih_2 =>
       cases e1
       case Var e1_x =>
@@ -110,13 +111,15 @@ example
         unfold bv_small_step at h1
         cases h : bv_small_step sub (e1_e1.App e1_e2)
         case none =>
-          rw [h] at h1
-          simp at h1
+          rewrite [h] at h1
+          simp only at h1
+          contradiction
         case some val =>
-          rw [h] at h1
-          simp at h1
-          specialize ih_1 val h
+          rewrite [h] at h1
+          simp only at h1
+          simp only [Option.some.injEq] at h1
           rw [← h1]
+          specialize ih_1 val h
           exact is_bv_small_step.rule_1 (e1_e1.App e1_e2) val e2 ih_1
       case Abs e1_x e1_e =>
         cases e2
@@ -127,27 +130,29 @@ example
           unfold bv_small_step at h1
           cases h : bv_small_step sub (e2_e1.App e2_e2)
           case none =>
-            rw [h] at h1
-            simp at h1
+            rewrite [h] at h1
+            simp only at h1
+            contradiction
           case some val =>
-            rw [h] at h1
-            simp at h1
+            rewrite [h] at h1
+            simp only at h1
+            simp only [Option.some.injEq] at h1
             specialize ih_2 val h
-            rw [← h1]
+            rewrite [← h1]
             apply is_bv_small_step.rule_2
             · unfold Term_.is_abs
-              simp
+              simp only
             · exact ih_2
         case Abs e2_x e2_e =>
           unfold bv_small_step at h1
-          simp at h1
-          rw [← h1]
+          simp only [Option.some.injEq] at h1
+          rewrite [← h1]
           apply is_bv_small_step.rule_3
           unfold Term_.is_abs
-          simp
+          simp only
     case Abs x e _ =>
       unfold bv_small_step at h1
-      simp at h1
+      contradiction
 
 
 def iterate_bv_small_step
@@ -214,29 +219,34 @@ example
           case Var e2_x =>
             apply is_bv_big_step.rule_4
             · unfold Term_.is_abs
-              simp
+              simp only
+              intro contra
+              contradiction
             · apply is_bv_big_step.rule_1
             · apply ih_2
               unfold is_weak_head_normal_form
-              simp
+              simp only
           case App e2_e1 e2_e2 =>
             apply is_bv_big_step.rule_4
             · unfold Term_.is_abs
-              simp
+              simp only
+              intro contra
+              contradiction
             · apply is_bv_big_step.rule_1
             · apply ih_2
               unfold is_weak_head_normal_form
-              simp
+              simp only
               sorry
           sorry
         case App e1_e1 e1_e2 =>
           apply is_bv_big_step.rule_4
-          unfold Term_.is_abs
-          simp
-          sorry
-          sorry
+          · unfold Term_.is_abs
+            intro contra
+            contradiction
+          · sorry
+          · sorry
         unfold is_weak_head_normal_form at h2
-        simp at h2
+        simp only at h2
         unfold is_neutral_weak_head_normal_form at h2
         sorry
       sorry
