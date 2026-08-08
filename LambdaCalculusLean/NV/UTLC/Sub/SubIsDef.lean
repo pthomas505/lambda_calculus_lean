@@ -121,7 +121,7 @@ example
   sub_is_def_v3_alt x N M :=
   by
   induction h1
-  case var y =>
+  case var y_ x_ N_ =>
     apply sub_is_def_v3_alt.var
   case app P_ Q_ x_ N_ ih_1 ih_2 ih_3 ih_4 =>
     apply sub_is_def_v3_alt.app
