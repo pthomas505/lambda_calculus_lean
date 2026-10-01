@@ -22,8 +22,8 @@ theorem lemma_1_2_5_ii_left
     rewrite [c1]
     right
     constructor
-    · exact is_free_in_replace_free_eq_2 y N M h1
     · exact is_free_in_replace_free_eq_1 y N M h1
+    · exact is_free_in_replace_free_eq_2 y N M h1
   · by_cases c2 : is_free_in y M
     · left
       constructor

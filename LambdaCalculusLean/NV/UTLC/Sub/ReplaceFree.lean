@@ -77,6 +77,44 @@ theorem is_free_in_replace_free_eq_1
   (N : Term_)
   (M : Term_)
   (h1 : is_free_in x (replace_free x N M)) :
+  is_free_in x N :=
+  by
+  induction M
+  case Var v =>
+    unfold replace_free at h1
+    split at h1
+    case isTrue c1 =>
+      exact h1
+    case isFalse c1 =>
+      unfold is_free_in at h1
+      contradiction
+  case App P Q ih_1 ih_2 =>
+    unfold replace_free at h1
+    unfold is_free_in at h1
+
+    cases h1
+    case inl h1 =>
+      exact ih_1 h1
+    case inr h1 =>
+      exact ih_2 h1
+  case Abs v P ih =>
+    unfold replace_free at h1
+    split at h1
+    case isTrue c1 =>
+      unfold is_free_in at h1
+      obtain ⟨h1_left, h1_right⟩ := h1
+      contradiction
+    case isFalse c1 =>
+      unfold is_free_in at h1
+      obtain ⟨h1_left, h1_right⟩ := h1
+      exact ih h1_right
+
+
+theorem is_free_in_replace_free_eq_2
+  (x : String)
+  (N : Term_)
+  (M : Term_)
+  (h1 : is_free_in x (replace_free x N M)) :
   is_free_in x M :=
   by
   induction M
@@ -113,44 +151,6 @@ theorem is_free_in_replace_free_eq_1
       constructor
       · exact h1_left
       · exact ih h1_right
-
-
-theorem is_free_in_replace_free_eq_2
-  (x : String)
-  (N : Term_)
-  (M : Term_)
-  (h1 : is_free_in x (replace_free x N M)) :
-  is_free_in x N :=
-  by
-  induction M
-  case Var v =>
-    unfold replace_free at h1
-    split at h1
-    case isTrue c1 =>
-      exact h1
-    case isFalse c1 =>
-      unfold is_free_in at h1
-      contradiction
-  case App P Q ih_1 ih_2 =>
-    unfold replace_free at h1
-    unfold is_free_in at h1
-
-    cases h1
-    case inl h1 =>
-      exact ih_1 h1
-    case inr h1 =>
-      exact ih_2 h1
-  case Abs v P ih =>
-    unfold replace_free at h1
-    split at h1
-    case isTrue c1 =>
-      unfold is_free_in at h1
-      obtain ⟨h1_left, h1_right⟩ := h1
-      contradiction
-    case isFalse c1 =>
-      unfold is_free_in at h1
-      obtain ⟨h1_left, h1_right⟩ := h1
-      exact ih h1_right
 
 
 theorem is_free_in_replace_free_eq_3
@@ -394,9 +394,11 @@ theorem is_free_in_replace_free_eq_var_1
   (y : String)
   (M : Term_)
   (h1 : is_free_in x (replace_free x (Term_.Var y) M)) :
-  is_free_in x M :=
+  x = y :=
   by
-  exact is_free_in_replace_free_eq_1 x (Term_.Var y) M h1
+  obtain s1 := is_free_in_replace_free_eq_1 x (Term_.Var y) M h1
+  unfold is_free_in at s1
+  exact s1
 
 
 theorem is_free_in_replace_free_eq_var_2
@@ -404,11 +406,9 @@ theorem is_free_in_replace_free_eq_var_2
   (y : String)
   (M : Term_)
   (h1 : is_free_in x (replace_free x (Term_.Var y) M)) :
-  x = y :=
+  is_free_in x M :=
   by
-  obtain s1 := is_free_in_replace_free_eq_2 x (Term_.Var y) M h1
-  unfold is_free_in at s1
-  exact s1
+  exact is_free_in_replace_free_eq_2 x (Term_.Var y) M h1
 
 
 theorem is_free_in_replace_free_ne_var_1

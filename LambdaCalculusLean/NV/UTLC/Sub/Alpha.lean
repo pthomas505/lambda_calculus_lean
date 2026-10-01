@@ -414,7 +414,7 @@ example
           rewrite [contra] at a1_right
           apply a1_left
           rewrite [contra]
-          exact is_free_in_replace_free_eq_var_2 x y M a1_right
+          exact is_free_in_replace_free_eq_var_1 x y M a1_right
         · by_contra contra
           obtain s1 := is_free_in_replace_free_ne_2 x (Term_.Var y) M z a1_right contra
           unfold is_free_in at s1
